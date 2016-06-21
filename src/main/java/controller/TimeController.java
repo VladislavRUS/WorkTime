@@ -34,7 +34,8 @@ public class TimeController {
             try {
                 Files.createFile(file.toPath());
             } catch (IOException e) {
-                window.setText(e.toString());
+                Thread.sleep(3000);
+                System.exit(1);
             }
         }
 
@@ -78,11 +79,9 @@ public class TimeController {
             lines.forEach(writer::println);
             writer.flush();
             writer.close();
-
             System.exit(0);
         } catch (Exception e) {
             window.setText(e.toString());
-            
             System.exit(1);
         }
     }
