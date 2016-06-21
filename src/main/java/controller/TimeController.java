@@ -28,7 +28,7 @@ public class TimeController {
         window.getStopButton().addActionListener(e -> stopped = true);
     }
 
-    public void begin() {
+    public void begin() throws Exception{
         File file = new File("workTime.txt");
         if (!file.exists()) {
             try {
@@ -39,6 +39,28 @@ public class TimeController {
         }
 
         long time = 0;
+        Date now = new Date();
+        DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
+        List<String> lines = null;
+        try {
+            lines = Files.readAllLines(file.toPath());
+        } catch (IOException e) {
+            window.setText(e.toString());
+            Thread.sleep(3000);
+            System.exit(1);
+        }
+
+        String todayDate = format.format(now);
+        if(lines.size() > 0) {
+            String lastTimeAndDate = lines.get(lines.size() - 1);
+            String date = lastTimeAndDate.split(" ")[0];
+            if(date.equals(todayDate)){
+                long timeThatWasAlreadyWritten = getMillisFromString(lastTimeAndDate.split(" ")[1]);
+                time += timeThatWasAlreadyWritten;
+                lines.remove(lines.size() - 1);
+            }
+        }
+
         try {
             while (!stopped) {
                 if (!paused) {
@@ -48,20 +70,6 @@ public class TimeController {
                 } else {
                     window.setText("Paused: " + getTimeFromMilliseconds(time));
                     Thread.sleep(100);
-                }
-            }
-            Date now = new Date();
-            DateFormat format = new SimpleDateFormat("yyyy-MM-dd");
-            List<String> lines = Files.readAllLines(file.toPath());
-            String todayDate = format.format(now);
-
-            if(lines.size() > 0) {
-                String lastTimeAndDate = lines.get(lines.size() - 1);
-                String date = lastTimeAndDate.split(" ")[0];
-                if(date.equals(todayDate)){
-                    long timeThatWasAlreadyWritten = getMillisFromString(lastTimeAndDate.split(" ")[1]);
-                    time += timeThatWasAlreadyWritten;
-                    lines.remove(lines.size() - 1);
                 }
             }
             lines.add(todayDate + " " + getTimeFromMilliseconds(time));
@@ -74,6 +82,8 @@ public class TimeController {
             System.exit(0);
         } catch (Exception e) {
             window.setText(e.toString());
+            
+            System.exit(1);
         }
     }
 
